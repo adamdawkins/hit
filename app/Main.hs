@@ -15,8 +15,9 @@ import System.Directory
 default (T.Text)
 
 runCommand :: String -> [String] -> Sh ()
-runCommand "init" args = initCmd $ listToMaybe args
-runCommand cmd _       =  echo $ pack $ cmd ++ " is not a hit command"
+runCommand "init"    args = initCmd $ listToMaybe args
+runCommand "commit"  _    = commitCmd
+runCommand cmd _          =  echo $ pack $ cmd ++ " is not a hit command"
 
 -- initCmd:
 -- hit init [directory]
@@ -36,6 +37,9 @@ initCmd dir =
                 Just dir -> toFilePath dir
                 Nothing ->  toFilePath "."
               toFilePath = fromText . pack
+
+commitCmd :: Sh ()
+commitCmd = pwd >>= lsT >>= mapM_ echo
 
 main = do
   (command:args) <- getArgs
