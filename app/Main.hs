@@ -1,13 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExtendedDefaultRules #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
+
 module Main where
+
+import Control.Monad
 import Data.Maybe
-import Data.Text as T hiding (map)
+import Data.Functor ((<&>))
+import Data.Text as T hiding (map, filter)
 import Data.Tree
-
 import Shelly hiding (FilePath)
-
 import System.Environment
 import System.Directory
 
@@ -39,7 +41,13 @@ initCmd dir =
               toFilePath = fromText . pack
 
 commitCmd :: Sh ()
-commitCmd = pwd >>= lsT >>= mapM_ echo
+commitCmd = pwd
+            >>= lsT
+            <&> (\contents -> filter (not . (T.isSuffixOf ".git")) contents)
+            >>= mapM_ echo
+
+-- excludeGit :: Sh [Text] -> Sh [Text]
+-- excludeGit = liftM T.filter $ isInfixOf $ pack ".git"
 
 main = do
   (command:args) <- getArgs

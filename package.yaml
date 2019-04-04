@@ -34,11 +34,12 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - containers
+    - directory
     - hit
     - shelly
-    - directory
     - text
-    - containers
+    - vector
 
 tests:
   hit-test:
