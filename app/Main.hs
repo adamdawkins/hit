@@ -9,7 +9,7 @@ import Data.Maybe
 import Data.Functor ((<&>))
 import Data.Text as T hiding (map, filter)
 import Data.Tree
-import Shelly hiding (FilePath)
+import Shelly as S hiding (FilePath)
 import System.Environment
 import System.Directory
 
@@ -41,13 +41,16 @@ initCmd dir =
               toFilePath = fromText . pack
 
 commitCmd :: Sh ()
-commitCmd = pwd
-            >>= lsT
-            <&> (\contents -> filter (not . (T.isSuffixOf ".git")) contents)
-            >>= mapM_ echo
-
--- excludeGit :: Sh [Text] -> Sh [Text]
--- excludeGit = liftM T.filter $ isInfixOf $ pack ".git"
+commitCmd = do
+  currentPath <- pwd
+  files <- S.findWhen test_f currentPath
+  -- let files = filter test_f dir 
+  relFiles <- traverse relPath files
+  let relText = fmap (toTextIgnore) relFiles
+  let contents = filter (not . (T.isPrefixOf ".git")) relText
+  let contents' = filter (not . (T.isPrefixOf ".stack-work")) contents
+  
+  mapM_ echo contents'
 
 main = do
   (command:args) <- getArgs
